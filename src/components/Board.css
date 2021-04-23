@@ -1,0 +1,43 @@
+* {
+    box-sizing: border-box;
+}
+
+.square-container {
+    width: 400px;
+    height: 400px;
+    border: 1px solid black;
+
+    display: grid;
+    align-items: center;
+    align-content: stretch;
+    grid-template-columns: repeat(8, 1fr);
+}
+
+.square {
+    border: 1px solid black;
+    width: 45px;
+    height: 45px;
+
+    place-self: center;
+
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+
+    font-size: larger;
+    border-radius: 50%;
+}
+.square_X {
+    background-color: rgb(73, 71, 71);
+}
+.square_O {
+    background-color: lightpink;
+}
+.square_empty {
+    border: 1px dashed black;
+}
+.square:hover {
+    cursor: pointer;
+    background-color: lightgray;
+}
