@@ -1,3 +1,5 @@
+import { Field } from "../components/Types";
+
 const HOST = "http://localhost:9000";
 
 const fetchMoves = async (pos: string, to_move: string): Promise<Array<string>> => {
@@ -13,10 +15,17 @@ const fetchMoves = async (pos: string, to_move: string): Promise<Array<string>> 
 export interface AfterMoveResult {
     pos: string;
     moves: Array<string>;
+    move: Field;
 }
 
 const fetchPositionAfterMove = async (pos: string, to_move: string, move: string): Promise<AfterMoveResult> => {
     const response = await fetch(`${HOST}/make_move?pos=${pos}&to_move=${to_move}&move=${move}`);
+    const json = await response.json();
+    return { ...json, move };
+}
+
+const fetchBotMove = async (pos: string, to_move: string): Promise<AfterMoveResult> => {
+    const response = await fetch(`${HOST}/bot?pos=${pos}&to_move=${to_move}`);
     const json = await response.json();
     return json;
 }
@@ -25,4 +34,5 @@ const fetchPositionAfterMove = async (pos: string, to_move: string, move: string
 export {
     fetchMoves,
     fetchPositionAfterMove,
+    fetchBotMove,
 }

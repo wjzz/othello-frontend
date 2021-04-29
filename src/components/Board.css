@@ -52,7 +52,7 @@
     cursor: pointer;
 }
 
-.move_candidate:hover {
+.human.move_candidate:hover {
     cursor: pointer;
     background-color: rgb(247, 113, 113);
 }
