@@ -11,33 +11,48 @@
     align-items: center;
     align-content: stretch;
     grid-template-columns: repeat(8, 1fr);
+    background-color: rgb(0, 190, 0);
 }
 
 .square {
     border: 1px solid black;
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 50px;
 
     place-self: center;
+    place-items: center;
 
     display: flex;
     justify-content: center;
     flex-direction: column;
     text-align: center;
+}
 
-    font-size: larger;
+.square_occupied {
+    width: 90%;
+    height: 90%;
     border-radius: 50%;
 }
 .square_X {
-    background-color: rgb(73, 71, 71);
+    background-color: black;
 }
 .square_O {
-    background-color: lightpink;
+    background-color: white;
 }
-.square_empty {
-    border: 1px dashed black;
+
+.move_candidate div {
+    width: 25%;
+    height: 25%;
+    border-radius: 50%;
+
+    background-color: lightblue;
 }
-.square:hover {
+
+.move_candidate:hover {
     cursor: pointer;
-    background-color: lightgray;
+}
+
+.move_candidate:hover {
+    cursor: pointer;
+    background-color: rgb(247, 113, 113);
 }
