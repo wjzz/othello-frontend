@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { AfterMoveResult, fetchBotMove, fetchMoves, fetchPositionAfterMove } from '../api/Api';
-import { Color, INIT_POS, opposite_player, Field, PlayerConfig, defaultPlayerConfig, playerOfString, GameState, is_human } from "./Types";
+import { fetchBotMove, fetchPositionAfterMove, fetchStatus } from '../api/Api';
+import { Color, PlayerConfig, Field, defaultPlayerConfig, is_human, playerOfString, initialPosition, Position, Status, opposite_color } from './Types';
 import Board from "./Board";
 import './Game.css';
 
@@ -83,46 +83,50 @@ const MoveList: React.FC<MoveListProps> = ({ move_list }) => {
 }
 
 const Game = () => {
-    const [pos, setPos] = useState<string>(INIT_POS);
-    const [to_move, setToMove] = useState<Color>("X");
-    const [candidates, setCandidates] = useState<Array<string>>([]);
+    const [pos, setPos] = useState<Position>(initialPosition());
+    const [status, setStatus] = useState<Status | null>(null);
+    const [lastMove, setLastMove] = useState<Field | null>(null);
+
     const [move_list, setMoveList] = useState<Array<Field>>([]);
 
     const [config, setConfig] = useState<PlayerConfig>(defaultPlayerConfig);
-    const isHuman = is_human(config[to_move]);
+    const isHuman = is_human(config[pos.toMove]);
 
     useEffect(() => {
-        fetchMoves(pos, to_move).then(moves => setCandidates(moves));
-    }, []); // we only want useEffect to run once
+        if (status === null) {
+            fetchStatus(pos).then(status => setStatus(status));
+        }
+    }, []);
 
-    const update_state_after_move = ({ pos: newPos, moves, move }: AfterMoveResult) => {
-        const next_to_move = opposite_player(to_move);
-
-        setPos(newPos);
-        setToMove(next_to_move);
-        setCandidates(moves);
-        setMoveList([...move_list, move]);
+    const state_after_move = (newBoard: string) => {
+        const newPos = {
+            toMove: opposite_color(pos.toMove),
+            board: newBoard,
+        };
+        return newPos;
     }
 
     useEffect(() => {
         if (!isHuman) {
-            fetchBotMove(pos, to_move)
-                .then(update_state_after_move);
+            fetchBotMove(pos).then(move =>
+                handleMove(move));
         }
-    }, [isHuman, pos, to_move]);
+    }, [isHuman, pos]);
 
-    const handleMove = (field: string) => {
-      fetchPositionAfterMove(pos, to_move, field)
-        .then(update_state_after_move);
+    const handleMove = async (move: string) => {
+        setMoveList([...move_list, move]);
+        const newBoard = await fetchPositionAfterMove(pos, move);
+        const newPos = state_after_move(newBoard);
+        const status = await fetchStatus(newPos);
+        setLastMove(move);
+        setPos(newPos);
+        setStatus(status);
     }
 
     const handleReset = () => {
-        setPos(INIT_POS);
-        setToMove("X");
-        setCandidates([]);
+        setPos(initialPosition());
+        setStatus(null);
         setMoveList([]);
-
-        fetchMoves(INIT_POS, "X").then(moves => setCandidates(moves));
     }
 
     const handlePlayerChange = (player: Color) => (value: string) => {
@@ -134,10 +138,16 @@ const Game = () => {
             <div className="game">
                 <MoveList move_list={move_list} />
                 <div className="middle-panels">
-                    <Board pos={pos} candidates={candidates} handleMove={handleMove} isHuman={isHuman} />
+                    <Board
+                        pos={pos}
+                        lastMove={lastMove}
+                        status={status}
+                        handleMove={handleMove}
+                        isHuman={isHuman}
+                    />
                     <ControlPanel handleReset={handleReset} handlePlayerChange={handlePlayerChange} />
                 </div>
-                <Score to_move={to_move} config={config}/>
+                <Score to_move={pos.toMove} config={config}/>
             </div>
         </main>
     );

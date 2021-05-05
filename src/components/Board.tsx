@@ -1,9 +1,10 @@
+import classNames from 'classnames';
 import React from 'react';
 import './Board.css';
-import { ALL_COLS, ALL_ROWS, rowcol2field, rowcol2index } from "./Types";
+import { ALL_COLS, ALL_ROWS, Field, Position, rowcol2field, rowcol2index, Status } from "./Types";
 
 const scrutinize = (ascii: string): string => {
-  switch(ascii) {
+  switch (ascii) {
     case 'X': return 'square_occupied square_X';
     case 'O': return 'square_occupied square_O';
     case '.':
@@ -12,17 +13,26 @@ const scrutinize = (ascii: string): string => {
   }
 }
 
-const Square = (props: any) => {
-  const { row, col, candidates, isHuman, ascii, make_move } = props;
+interface SquareProps {
+  row: number;
+  col: number;
+  status: Status | null;
+  lastMove: Field | null;
+  isHuman: boolean;
+  ascii: string;
+  handleMove: (field: Field) => void;
+};
 
-  const candidate_moves = candidates as Array<string>;
+const Square: React.FC<SquareProps> = ({ row, col, status, lastMove, isHuman, ascii, handleMove }) => {
+  const candidates = (status === null) ? [] : (status as Status).moves;
+
   const field = rowcol2field(row, col);
-  const is_candidate = candidate_moves.includes(field);
+  const is_candidate = candidates.includes(field);
 
   const scrutinize_candidate = () => {
     if (isHuman && is_candidate) {
       return {
-        onClick: () => make_move(rowcol2field(row, col))
+        onClick: () => handleMove(rowcol2field(row, col))
       };
     } else {
       return {};
@@ -30,21 +40,34 @@ const Square = (props: any) => {
   }
 
   const handlers = scrutinize_candidate();
+
+  const parent_classes = classNames("square", {
+    "human": isHuman,
+    "move_candidate": is_candidate,
+    "last_move": lastMove === field,
+  });
+
   const square_class = scrutinize(ascii);
-  const parent_classes = is_candidate ? `square move_candidate` : "square";
-  const human_classes = isHuman ? "human " + parent_classes : parent_classes;
 
   return (
-    <div className={human_classes} {...handlers}>
+    <div className={parent_classes} {...handlers}>
       <div className={square_class}>
+        {/* {field}/{rowcol2index(row, col)} */}
       </div>
     </div>
   )
 }
 
+interface BoardProps {
+  pos: Position;
+  status: Status | null;
+  lastMove: Field | null;
+  isHuman: boolean;
+  handleMove: (field: Field) => void;
+}
 
-const Board = (props: any) => {
-  const { pos, candidates, isHuman, handleMove} = props;
+const Board: React.FC<BoardProps> = ({ pos, status, lastMove, isHuman, handleMove }) => {
+  const board = pos.board;
 
   const generateSquares = () =>
     ALL_ROWS.flatMap(row =>
@@ -53,10 +76,11 @@ const Board = (props: any) => {
           key={rowcol2index(row, col)}
           row={row}
           col={col}
-          candidates={candidates}
-          make_move={handleMove}
+          lastMove={lastMove}
+          status={status}
+          handleMove={handleMove}
           isHuman={isHuman}
-          ascii={pos[rowcol2index(row, col)]}
+          ascii={board[rowcol2index(row, col)]}
         />
       )
     );

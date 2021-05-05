@@ -56,3 +56,7 @@
     cursor: pointer;
     background-color: rgb(247, 113, 113);
 }
+
+.last_move {
+    background-color:lightblue !important;
+}

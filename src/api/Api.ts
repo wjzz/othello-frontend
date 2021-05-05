@@ -1,38 +1,26 @@
-import { Field } from "../components/Types";
+import { Position, Status } from "../components/Types";
 
 const HOST = "http://localhost:9000";
 
-const fetchMoves = async (pos: string, to_move: string): Promise<Array<string>> => {
-    const response = await fetch(`${HOST}/candidates?pos=${pos}&to_move=${to_move}`);
-    const json = await response.json();
-    if (Array.isArray(json)) {
-        return json;
-    }
-    console.error("/candidates didn't return an array!");
-    return [];
+const sleep = (ms: number) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export interface AfterMoveResult {
-    pos: string;
-    moves: Array<string>;
-    move: Field;
-}
-
-const fetchPositionAfterMove = async (pos: string, to_move: string, move: string): Promise<AfterMoveResult> => {
-    const response = await fetch(`${HOST}/make_move?pos=${pos}&to_move=${to_move}&move=${move}`);
-    const json = await response.json();
-    return { ...json, move };
-}
-
-const fetchBotMove = async (pos: string, to_move: string): Promise<AfterMoveResult> => {
-    const response = await fetch(`${HOST}/bot?pos=${pos}&to_move=${to_move}`);
+export const fetchStatus = async (pos: Position): Promise<Status> => {
+    const response = await fetch(`${HOST}/status?pos=${pos.board}&to_move=${pos.toMove}`);
     const json = await response.json();
     return json;
 }
 
+export const fetchBotMove = async (pos: Position): Promise<string> => {
+    const response = await fetch(`${HOST}/bot?pos=${pos.board}&to_move=${pos.toMove}`);
+    const move = await response.text();
+    await sleep(3000);
+    return move;
+}
 
-export {
-    fetchMoves,
-    fetchPositionAfterMove,
-    fetchBotMove,
+export const fetchPositionAfterMove = async (pos: Position, move: string): Promise<string> => {
+    const response = await fetch(`${HOST}/make_move?pos=${pos.board}&to_move=${pos.toMove}&move=${move}`);
+    const newPos = await response.text();
+    return newPos;
 }
