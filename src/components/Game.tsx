@@ -50,9 +50,27 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ handleReset, handlePlayerCh
 interface ScoreProps {
     to_move: Color;
     config: PlayerConfig;
+    status: Status | null;
 }
 
-const Score: React.FC<ScoreProps> = ({ to_move, config }) => {
+const Score: React.FC<ScoreProps> = ({ to_move, config, status }) => {
+    if (!!status && status.gameFinished) {
+        const { difference, winner } = status;
+        if (difference === 0) {
+            return (
+                <div>
+                    DRAW!
+                </div>
+            );
+        } else {
+            return (
+                <div>
+                    {winner} wins by {Math.abs(difference)}!
+                </div>
+            )
+        }
+    }
+
     return (
         <div>
             <p>
@@ -92,6 +110,7 @@ const Game = () => {
     const [config, setConfig] = useState<PlayerConfig>(defaultPlayerConfig);
     const isHuman = is_human(config[pos.toMove]);
 
+    // Initialization before the first move
     useEffect(() => {
         if (status === null) {
             fetchStatus(pos).then(status => setStatus(status));
@@ -114,11 +133,24 @@ const Game = () => {
     }, [isHuman, pos]);
 
     const handleMove = async (move: string) => {
-        setMoveList([...move_list, move]);
         const newBoard = await fetchPositionAfterMove(pos, move);
-        const newPos = state_after_move(newBoard);
-        const status = await fetchStatus(newPos);
-        setLastMove(move);
+        let newPos = state_after_move(newBoard);
+        let status = await fetchStatus(newPos);
+
+        let new_move_list = [...move_list, move];
+        let last_move = move;
+
+        if (status.passForced) {
+            alert("PASS!");
+            new_move_list.push("pass");
+            last_move = "pass";
+            
+            newPos = state_after_move(newBoard);
+            status = await fetchStatus(newPos);
+        }
+
+        setMoveList(new_move_list);
+        setLastMove(last_move);
         setPos(newPos);
         setStatus(status);
     }
@@ -126,7 +158,9 @@ const Game = () => {
     const handleReset = () => {
         setPos(initialPosition());
         setStatus(null);
+        setLastMove(null);
         setMoveList([]);
+        fetchStatus(pos).then(status => setStatus(status));
     }
 
     const handlePlayerChange = (player: Color) => (value: string) => {
@@ -147,7 +181,7 @@ const Game = () => {
                     />
                     <ControlPanel handleReset={handleReset} handlePlayerChange={handlePlayerChange} />
                 </div>
-                <Score to_move={pos.toMove} config={config}/>
+                <Score to_move={pos.toMove} config={config} status={status} />
             </div>
         </main>
     );

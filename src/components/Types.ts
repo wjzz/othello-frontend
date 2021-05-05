@@ -8,6 +8,15 @@ export type StrBoard = string;
 
 export const INIT_BOARD: StrBoard = "...........................OX......XO...........................";
 
+// O pass example
+// export const INIT_BOARD: StrBoard = "OOOOOOO.XXXOO...XXOXOO..OOXXXOOOXXXXXXXXXOOOXXXXXXXXXXXXXXXXXXXX";
+
+// Game over example: OOOOOOOXXXXXXXXXXXOXXXXXOOXXOXXXXXXOOXXXXOOOXXXXXXXXXXXXXXXXXXXX
+// export const INIT_BOARD: StrBoard = "OOOOOOOXXXXXXXXXXXOXXXXXOOXXOXXXXXXOOXXXXOOOXXXXXXXXXXXXXXXXXXXX";
+
+// Game over example: OOOOOOOXXXXXXXXXXXOXXXXXOOXXOXXXXXXOOXXXXOOOXXXXXXXXXXXXXXXXXXXX
+// export const INIT_BOARD: StrBoard = "OOOOOOOXXXXXXXXXXXOXXXXXOOXXOXXXXXXOOXXXXOOOOOOOOOOOOOOOOOOXOOXX";
+
 export const rowcol2index = (row: number, col: number): Index =>
   8*row+col;
 
